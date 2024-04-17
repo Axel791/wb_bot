@@ -31,3 +31,6 @@ class StatisticsAPIService:
     async def close(self):
         """Закрытие клиента HTTP."""
         await self._client.aclose()
+
+
+# TODO добавить преобразование в entity, так как не сходятся данные из словаря после получения ответа от API
