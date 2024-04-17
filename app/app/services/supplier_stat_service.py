@@ -32,10 +32,8 @@ class SupplierStatService:
 
     async def create_supplier_orders_stat(self, objs: list[dict]) -> None:
         """Сохранение информации о новых заказах"""
-        validate_date = await self.validate_exist_stat_item(objs=objs, stat_type=StatType.orders)
-        await self._repository_supplier_order.bulk_create(objs_in=validate_date)
+        await self._repository_supplier_order.bulk_create(objs_in=objs)
 
     async def create_supplier_sale_stat(self, objs: list[dict]) -> None:
         """Сохранение информации о новых продажах"""
-        validate_date = await self.validate_exist_stat_item(objs=objs, stat_type=StatType.sales)
-        await self._repository_supplier_sale.bulk_create(objs_in=validate_date)
+        await self._repository_supplier_sale.bulk_create(objs_in=objs)
