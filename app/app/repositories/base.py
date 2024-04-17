@@ -22,6 +22,11 @@ class RepositoryBase(Generic[ModelType,]):
         res = await self._session.execute(statement)
         return res.scalar_one()
 
+    async def bulk_create(self, objs_in: list[dict]) -> None:
+        instances = [self._model(**data) for data in objs_in]
+        async with self._session.begin():
+            self._session.add_all(instances)
+
     async def get(
         self,
         *args,

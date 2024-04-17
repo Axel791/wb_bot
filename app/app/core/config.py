@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # endregion
 
     wb_api_key: str = Field(title="API ключ")
+    base_url: str = Field(title="wb url")
     debug: bool = Field(title="Режим отладки", default=True)
 
     # region Настройки БД

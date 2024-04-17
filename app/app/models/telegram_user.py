@@ -1,10 +1,10 @@
 from app.db.base import Base
 
 from app.models.mixins import UUIDMixin, TimestampedMixin
-from sqlalchemy import Column, BigInteger, String, Boolean
+from sqlalchemy import Column, BigInteger, String
 
 
-class TelegramUser(UUIDMixin, TimestampedMixin,  Base):
+class TelegramUser(UUIDMixin, TimestampedMixin, Base):
     """Модель телеграм пользователя"""
 
     user_id = Column(
