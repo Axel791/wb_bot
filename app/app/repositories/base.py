@@ -24,8 +24,12 @@ class RepositoryBase(Generic[ModelType,]):
 
     async def bulk_create(self, objs_in: list[dict]) -> None:
         instances = [self._model(**data) for data in objs_in]
-        async with self._session.begin():
+        if not self._session.in_transaction():
+            async with self._session.begin():
+                self._session.add_all(instances)
+        else:
             self._session.add_all(instances)
+            await self._session.flush()
 
     async def get(
         self,

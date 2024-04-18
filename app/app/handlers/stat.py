@@ -2,6 +2,7 @@ import os
 import aioredis
 
 from aiogram import F
+from aiogram.types import InputFile
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -29,9 +30,9 @@ async def send_date(
     """Принимаем последнего изменения по поставке"""
     user_id = str(callback_query.from_user.id)
 
-    if await redis.exists(user_id):
-        await callback_query.message.answer("Ограничение 3 минуты на просмотр статистики")
-        return
+    # if await redis.exists(user_id):
+    #     await callback_query.message.answer("Ограничение 3 минуты на просмотр статистики")
+    #     return
 
     await callback_query.message.delete_reply_markup()
     await callback_query.message.answer(
@@ -86,7 +87,12 @@ async def process_stat(
         if validated_stat_sale:
             await supplier_stat_service.create_supplier_sale_stat(objs=validated_stat_sale)
             sales_exel_file = excel_export_service.export_to_excel(data=validated_stat_sale)
-            await callback_query.message.answer_document(open(sales_exel_file, 'rb'), caption='Продажи')
+
+            print(f"SALE_F: {sales_exel_file}")
+
+            file = InputFile(sales_exel_file)
+            await callback_query.message.answer_document(file, caption='Продажи')
+
             os.remove(sales_exel_file)
 
     if stats_order:
@@ -97,7 +103,12 @@ async def process_stat(
         if validated_stat_order:
             await supplier_stat_service.create_supplier_orders_stat(objs=validated_stat_order)
             orders_excel_file = excel_export_service.export_to_excel(data=validated_stat_order)
-            await callback_query.message.answer_document(open(orders_excel_file, 'rb'), caption='Заказы')
+
+            print(f"ORD_F: {orders_excel_file}")
+
+            file = InputFile(orders_excel_file)
+            await callback_query.message.answer_document(file, caption='Заказы')
+
             os.remove(orders_excel_file)
 
     await redis.set(user_id, "active", ex=180)

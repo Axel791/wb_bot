@@ -27,7 +27,11 @@ class SupplierStatService:
         for obj in dict_data:
             exists = await (
                 self._repository_supplier_order
-                if stat_type == StatType.orders else self._repository_supplier_sale).exists(**obj)
+                if stat_type == StatType.orders else self._repository_supplier_sale
+            ).exists(
+                g_number=obj.get("g_number"),
+                nm_id=obj.get("nm_id"),
+            )
             if not exists:
                 new_objs.append(obj)
         return new_objs

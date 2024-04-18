@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from datetime import datetime
 
@@ -32,9 +32,18 @@ class TransactionBaseSchema(BaseModel):
     order_type: OrderType = Field(..., alias="orderType", title="Тип заказа")
     srid: str | None = Field(None, alias="srid", title="Уникальный идентификатор источника данных")
 
+    @field_validator("order_type", mode="before")
+    @classmethod
+    def validate_order_type(cls, v):
+        if isinstance(v, str):
+            try:
+                new_v = OrderType(v)
+            except ValueError:
+                raise ValueError(f"Неверное поле для OrderType: {v}")
+            return new_v
+
     class Config:
-        use_enum_values = True
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class OrderSchema(TransactionBaseSchema):
@@ -42,15 +51,13 @@ class OrderSchema(TransactionBaseSchema):
     cancel_date: datetime | None = Field(None, alias="cancelDate", title="Дата отмены")
 
     class Config:
-        use_enum_values = True
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class SaleSchema(TransactionBaseSchema):
     payment_sale_amount: float = Field(..., alias="paymentSaleAmount", title="Сумма платежа по продаже")
-    for_pay: float = Field(..., alias="fowrPay", title="Сумма к оплате")
+    for_pay: float | None = Field(None, alias="fowrPay", title="Сумма к оплате")
     sale_id: str = Field(..., alias="saleID", title="Уникальный ID продажи")
 
     class Config:
-        use_enum_values = True
-        allow_population_by_field_name = True
+        populate_by_name = True
