@@ -11,6 +11,7 @@ class ExcelExportService:
         """Экспорт данных во временный Excel файл."""
         df = pd.DataFrame(data)
 
+        # Убедитесь, что каталог 'tmp' существует
         temp_dir = os.path.join('/app', 'tmp')
         os.makedirs(temp_dir, exist_ok=True)
 
@@ -18,4 +19,4 @@ class ExcelExportService:
         with NamedTemporaryFile(delete=False, suffix='.xlsx', dir=temp_dir, prefix='stat_') as tmp:
             with pd.ExcelWriter(tmp.name, engine='openpyxl') as writer:
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
-            return tmp.file
+            return tmp.name
