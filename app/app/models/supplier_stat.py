@@ -9,11 +9,11 @@ from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, BigInt
 class OrderType(enum.Enum):
     """Типы заказов"""
     client = "Клиентский"
-    return_of_marriage = "Возврат брака"
+    return_of_marriage = "Возврат Брака"
     forced_return = "Принудительный возврат"
     return_of_anonymity = "Возврат обезлички"
     return_invalid_attachment = "Возврат Неверного Вложения"
-    seller_return = "Возврат продавца"
+    seller_return = "Возврат Продавца"
 
 
 class TransactionBase(UUIDMixin, TimestampedMixin):
@@ -50,7 +50,7 @@ class SupplierOrder(TransactionBase, Base):
     """Модель заказов"""
 
     is_cancel = Column(Boolean, default=False, doc="Признак отмены")
-    cancel_date = Column(DateTime, nullable=False, doc="Дата отмены")
+    cancel_date = Column(DateTime, nullable=True, doc="Дата отмены")
 
     __tablename__ = "order"
 
@@ -63,9 +63,9 @@ class SupplierSale(TransactionBase, Base):
 
     __tablename__ = "sale"
 
-    payment_sale_amount = Column(Float, nullable=False, doc="Сумма платежа по продаже.")
-    for_pay = Column(Float, nullable=False, doc="Сумма к оплате.")
-    sale_id = Column(String(255), nullable=False, doc="Уникальный ID продажи.")
+    payment_sale_amount = Column(Float, nullable=True, doc="Сумма платежа по продаже.")
+    for_pay = Column(Float, nullable=True, doc="Сумма к оплате.")
+    sale_id = Column(String(255), nullable=True, doc="Уникальный ID продажи.")
 
     def __repr__(self):
         return f"Продажа: {self.supplier_article}"

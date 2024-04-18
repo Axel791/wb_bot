@@ -25,7 +25,7 @@ class Container(containers.DeclarativeContainer):
     session = providers.Factory(db().create_session)
     redis_pool = providers.Resource(
         init_redis.init_redis_pool,
-        host=config.provided.REDIS_HOST
+        host=config.provided.redis_host
     )
 
     # region repository

@@ -6,7 +6,7 @@ authors = ["timofejkazakov <t.kazakov@agora.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 aiogram = "^3.2.0"
 alembic = "^1.13.0"
 sqlalchemy = "^2.0.23"
@@ -23,6 +23,8 @@ httpx = "^0.27.0"
 pandas = "^2.2.2"
 redis = "^4.1.4"
 aioredis = "^2.0.1"
+numpy = "^1.26.4"
+openpyxl = "^3.1.2"
 
 
 [build-system]
