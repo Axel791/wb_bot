@@ -1,4 +1,10 @@
 import httpx
+import logging
+
+from app.schemas.supplier_stat_schema import OrderSchema, SaleSchema
+
+
+logger = logging.Logger(__name__)
 
 
 class StatisticsAPIService:
@@ -10,27 +16,34 @@ class StatisticsAPIService:
 
         self._client = httpx.AsyncClient(headers={"Authorization": self._api_key})
 
-    async def _get_data(self, endpoint: str, date_from: str, flag: int = 0) -> list[dict]:
+    async def _get_data(self, endpoint: str, date_from: str, flag: int = 0) -> list[dict] | None:
         """Общий метод для получения данных с использованием фильтров."""
-        params = {
-            "dateFrom": date_from,
-            "flag": flag
-        }
-        response = await self._client.get(f"{self._base_url}{endpoint}", params=params)
-        response.raise_for_status()
-        return response.json()
+        try:
+            params = {
+                "dateFrom": date_from,
+                "flag": flag
+            }
+            response = await self._client.get(f"{self._base_url}{endpoint}", params=params)
+            response.raise_for_status()
+            return response.json()
+        except (httpx.HTTPStatusError, httpx.RequestError, Exception) as _exc:
+            logger.error(f"ERROR: {_exc}")
+            return None
 
-    async def get_sales_data(self, date_from: str, flag: int = 0) -> list[dict]:
+    async def get_sales_data(self, date_from: str, flag: int = 0) -> list[SaleSchema] | None:
         """Получение данных о продажах."""
-        return await self._get_data("/api/v1/supplier/sales", date_from, flag)
+        data = await self._get_data("/api/v1/supplier/sales", date_from, flag)
+        if data:
+            return [SaleSchema(**obj) for obj in data]
+        return None
 
-    async def get_orders_data(self, date_from: str, flag: int = 0) -> list[dict]:
+    async def get_orders_data(self, date_from: str, flag: int = 0) -> list[OrderSchema] | None:
         """Получение данных о заказах."""
-        return await self._get_data("/api/v1/supplier/orders", date_from, flag)
+        data = await self._get_data("/api/v1/supplier/orders", date_from, flag)
+        if data:
+            return [OrderSchema(**obj) for obj in data]
+        return None
 
     async def close(self):
         """Закрытие клиента HTTP."""
         await self._client.aclose()
-
-
-# TODO добавить преобразование в entity, так как не сходятся данные из словаря после получения ответа от API

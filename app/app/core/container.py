@@ -14,6 +14,8 @@ from app.services.supplier_stat_service import SupplierStatService
 from app.services.excel_export_service import ExcelExportService
 from app.services.statics_api_service import StatisticsAPIService
 
+from app.db import init_redis
+
 
 class Container(containers.DeclarativeContainer):
     """Зависимости проекта"""
@@ -21,6 +23,10 @@ class Container(containers.DeclarativeContainer):
     config = providers.Singleton(Settings)
     db = providers.Singleton(AsyncSessionConstructor, db_url=config.provided.postgres_url)
     session = providers.Factory(db().create_session)
+    redis_pool = providers.Resource(
+        init_redis.init_redis_pool,
+        host=config.provided.REDIS_HOST
+    )
 
     # region repository
     repository_telegram_user = providers.Singleton(

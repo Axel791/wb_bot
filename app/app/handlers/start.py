@@ -8,7 +8,7 @@ from app.core.container import Container
 from app.services.telegram_user_service import TelegramUserService
 
 from app.keyboards.keyboard import stat_kb
-from app.schemas.telegram_user import TelegramUserEntity
+from app.schemas.telegram_user_schema import TelegramUserEntity
 
 start_router = Router()
 

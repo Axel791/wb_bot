@@ -21,6 +21,8 @@ flask-login = "^0.6.3"
 watchdog = "^3.0.0"
 httpx = "^0.27.0"
 pandas = "^2.2.2"
+redis = "^4.1.4"
+aioredis = "^2.0.1"
 
 
 [build-system]

@@ -1,5 +1,5 @@
 from app.repositories.telegram_user import RepositoryTelegramUser
-from app.schemas.telegram_user import TelegramUserEntity
+from app.schemas.telegram_user_schema import TelegramUserEntity
 
 
 class TelegramUserService:

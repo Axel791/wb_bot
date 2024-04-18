@@ -1,4 +1,5 @@
 import os
+import aioredis
 
 from aiogram import F
 from aiogram import Router
@@ -19,8 +20,19 @@ stat_router = Router()
 
 
 @stat_router.callback_query(F.data == "get_stat")
-async def send_date(callback_query: CallbackQuery, state: FSMContext) -> None:
+@inject
+async def send_date(
+        callback_query: CallbackQuery,
+        state: FSMContext,
+        redis: aioredis.Redis = Provide[Container.redis_pool]
+) -> None:
     """Принимаем последнего изменения по поставке"""
+    user_id = str(callback_query.from_user.id)
+
+    if await redis.exists(user_id):
+        await callback_query.message.answer("Ограничение 3 минуты на просмотр статистики")
+        return
+
     await callback_query.message.delete_reply_markup()
     await callback_query.message.answer(
         "Введите дату и время последнего изменения по поставке\n Формат: 2019-06-20 или 2017-03-25T00:00:00",
@@ -48,9 +60,11 @@ async def process_stat(
         supplier_stat_service: SupplierStatService = Provide[Container.supplier_stat_service],
         excel_export_service: ExcelExportService = Provide[Container.excel_export_service],
         statics_api_service: StatisticsAPIService = Provide[Container.statics_api_service],
+        redis: aioredis.Redis = Provide[Container.redis_pool]
 ) -> None:
     """Отдаем статистику пользователю"""
     callback_query_msg = callback_query.message
+    user_id = str(callback_query.from_user.id)
 
     if callback_query_msg == "cancel":
         await state.clear()
@@ -64,27 +78,29 @@ async def process_stat(
     stats_sale = await statics_api_service.get_sales_data(date_from=date_from, flag=flag)
     stats_order = await statics_api_service.get_orders_data(date_from=date_from, flag=flag)
 
-    validated_stat_sale = await supplier_stat_service.validate_exist_stat_item(
-        objs=stats_sale,
-        stat_type=StatType.sales
-    )
-    validated_stat_order = await supplier_stat_service.validate_exist_stat_item(
-        objs=stats_order,
-        stat_type=StatType.orders
-    )
+    if stats_sale:
+        validated_stat_sale = await supplier_stat_service.validate_exist_stat_item(
+            objs=stats_sale,
+            stat_type=StatType.sales
+        )
+        if validated_stat_sale:
+            await supplier_stat_service.create_supplier_sale_stat(objs=validated_stat_sale)
+            sales_exel_file = excel_export_service.export_to_excel(data=validated_stat_sale)
+            await callback_query.message.answer_document(open(sales_exel_file, 'rb'), caption='Продажи')
+            os.remove(sales_exel_file)
 
-    if validated_stat_sale:
-        await supplier_stat_service.create_supplier_sale_stat(objs=validated_stat_sale)
-        sales_exel_file = excel_export_service.export_to_excel(data=validated_stat_sale)
-        await callback_query.message.answer_document(open(sales_exel_file, 'rb'), caption='Продажи')
-        os.remove(sales_exel_file)
+    if stats_order:
+        validated_stat_order = await supplier_stat_service.validate_exist_stat_item(
+            objs=stats_order,
+            stat_type=StatType.orders
+        )
+        if validated_stat_order:
+            await supplier_stat_service.create_supplier_orders_stat(objs=validated_stat_order)
+            orders_excel_file = excel_export_service.export_to_excel(data=validated_stat_order)
+            await callback_query.message.answer_document(open(orders_excel_file, 'rb'), caption='Заказы')
+            os.remove(orders_excel_file)
 
-    if validated_stat_order:
-        await supplier_stat_service.create_supplier_orders_stat(objs=validated_stat_order)
-        orders_excel_file = excel_export_service.export_to_excel(data=validated_stat_order)
-        await callback_query.message.answer_document(open(orders_excel_file, 'rb'), caption='Заказы')
-        os.remove(orders_excel_file)
-
+    await redis.set(user_id, "active", ex=180)
     await state.clear()
     await statics_api_service.close()
 

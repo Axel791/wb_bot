@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     postgres_db: str = Field(title="Название БД")
     # endregion
 
+    redis_port: int = Field(title="Redis host", default=6379)
+    redis_host: str = Field(title="Redis port")
+
     database_url: PostgresDsn | None = Field(title="Ссылка БД", default=None)
 
     @computed_field

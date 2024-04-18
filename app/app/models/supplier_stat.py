@@ -49,6 +49,9 @@ class TransactionBase(UUIDMixin, TimestampedMixin):
 class SupplierOrder(TransactionBase, Base):
     """Модель заказов"""
 
+    is_cancel = Column(Boolean, default=False, doc="Признак отмены")
+    cancel_date = Column(DateTime, nullable=False, doc="Дата отмены")
+
     __tablename__ = "order"
 
     def __repr__(self):

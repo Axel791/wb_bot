@@ -30,6 +30,13 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       PGDATA: /var/lib/postgresql/data/pgdata
 
+  app_redis:
+    container_name: ${PROJECT_SLUG}_redis
+    networks:
+      - internal
+    image: redis:5.0.0
+    command: "redis-server"
+
   app:
     <<: *python
     container_name: ${PROJECT_SLUG}_app
